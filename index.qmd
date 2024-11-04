@@ -15,140 +15,100 @@ format:
 ---
 
 
-## Main points
+## A proposition
 
-- Sometimes it is more convenient to express a complex distribution as a transformation of a simpler distribution.
-
-- Flow-based generative models can be thought of as a 'bridge' (a one-to-one mapping) between different distributions 
-
-- ...
+_Sometimes it is more convenient to express a complicated distribution as a complicated transformation of a simpler distribution._
 
 
-## Flow-based Generative Models
-
-Learn a smooth, invertible mapping from the data to a set of variables whose joint density is trivial to sample from.
-
-
-::::{.fragment}
-:::{.callout-important}
-Flow-based models come with _explicit_ and _tractable_ densities - i.e. we don't just get the 'data' $x$, but we get $p_\theta(x)$ too.
-
-This is very different from other kinds of generative models, and opens up some interesting opportunities for statistics.
-:::
-::::
-
-![](diffusion_flower.gif){.absolute bottom=0 left=0}
-![](forward.gif){.absolute bottom=-30 left=650 width=350}
-
-:::{.notes}
-- Often conditioned on some context (e.g. a prompt)
-- Can include stochastic steps, e.g. diffusion models
-:::
-
-
-## (Asymptotically) unbiased sampling
-
-:::{.fragment}
-#### Markov Chain Monte Carlo
-
-1. Construct a stochastic process with stationary density $\pi = p^\star$
-2. Thermalise
-3. Sample over a period $\gg$ autocorrelation time 
-:::
-
-:::{.fragment}
-#### Variational approach
-
-1. Construct a flow-based model with variational density $p_\theta$
-2. Tune $\theta$ such that $p_\theta \approx p^\star$
-3. Reweight i.i.d. samples from $p_\theta$
-:::
-
-:::{.notes}
-I am focusing exclusively on densities that are continuous functions of the variables.
-:::
-
-
-# Backup slides
+![](diffusion_flower.gif){.absolute bottom=170 left=0 width=200}
+![](forward.gif){.absolute bottom=140 left=650 width=400}
 
 
 ## Flow-based models
 
-Ingredients:
+Learn an invertible mapping from the data to a set of variables whose joint density is trivial to sample from.
 
-- $q(z)$, a tractable base density (e.g. a Gaussian)
-- A family of invertible functions $f_\theta : z \mapsto x$, parametrised by $\theta$ (weights \& biases of neural networks), with _tractable Jacobian determinant_
+Think of them as a 'bridge' between different distributions.
 
+![](normalizing-flow.png)
+
+::: aside
+For the statisticians: a more powerful and general form of inversion sampling.
+
+For the mathematicians: variational families of diffeomorphisms.
+:::
+
+:::{.notes}
+TODO: credit image
+:::
+
+
+## Flow-based models
+
+Basic recipe for flows on $\mathbb{R}^D$:
+
+- $q(z)$, a simple base density (e.g. a Gaussian)
+- A family of invertible functions $f_\theta : \mathbb{R}^D \to \mathbb{R}^D$, parametrised by $\theta$ (weights \& biases of neural networks), with _tractable Jacobian determinant_
 $$
 \underbrace{p_\theta(x)}_{\text{variational density}}
 = \underbrace{q\left(f_\theta^{-1}(x)\right)}_{\text{base density}}
 \underbrace{\left\lvert \frac{\partial f_\theta^{-1}(x)}{\partial x} \right\rvert}_{\text{Jacobian determinant}}
 $$
 
-## Training flow-based models
-
-Minimise the Kullback-Liebler divergence between $p_\theta$ and a _target density_ $p^\star$ (e.g. defined implicitly by our data)
-
-
-:::{.fragment}
-$$
-p_\theta( x ) \equiv \int_{\mathcal{Z}} \mathrm{d} z \, q(z) k_\theta(z, x)
-$$
-Useful for...
-
-- **Inference:** Given a new data point $x$, estimate $p^\star(x)$
-- **Sampling:** Generate samples $x \sim p_\theta \approx p^\star$
+:::{.notes}
+- Often conditioned on some context (e.g. a prompt)
+- Can include stochastic steps, e.g. diffusion models
 :::
 
-## Generative Models
+## Flow-based models
 
-:::{.fragment .strike}
-AI wizardry that generates things no-one asked for.
+- Flow-based models come with _explicit_ and _tractable_ densities.
+
+- I.e. we don't just get the 'data' $x$, but we get the associated density $p_\theta(x)$ too.
+
+- This is very different from other kinds of generative models, and opens up some interesting opportunities for statistics.
+
+
+## One possible use-case
+
+(Asymptotically) unbiased sampling from $p^\star$.
+
+::::{.fragment}
+:::{.callout-note icon=false}
+#### Markov Chain Monte Carlo
+
+1. Construct a stochastic process with stationary density $\pi = p^\star$
+2. Thermalise
+3. Sample over a period $\gg$ autocorrelation time 
+:::
+::::
+
+::::{.fragment}
+:::{.callout-tip icon=false}
+#### Flow-based approach
+
+1. Construct a flow-based model with variational density $p_\theta$
+2. Tune $\theta$ such that $p_\theta \approx p^\star$
+3. Reweight i.i.d. samples from $p_\theta$
+:::
+::::
+
+:::{.notes}
+I am focusing exclusively on densities that are continuous functions of the variables.
 :::
 
+## Thanks for listening
 
-:::{.fragment}
-Algorithms that sample from complicated distributions...
+
+Very happy to chat if you are interested in these models, especially if
+
+- You use MCMC and are facing scalability challenges
+- You are interested in interpretable statistical emulation of process models
+
+
+Get in touch: joemar@ceh.ac.uk
+
+:::{.callout-note}
+I will be giving a longer talk on the same topic in the EDS seminar on 20th November.
 :::
-
-
-:::{.fragment}
-...Typically through a single forward pass of a highly expressive variational model.
-:::
-
-
-## Taxonomy of generative models 
-(due to Ian Goodfellow)
-
-```{mermaid}
-%%| fig-wigth: 20
-graph TD;
-    %% Define a class with the desired styles
-    classDef defaultStyle fill:#f9f,stroke:#333,stroke-width:1px;
-
-    %% Apply the class to all nodes
-    class A1,B1,B2,C1,C2,C3,C4 defaultStyle;
-
-    %% Top layer
-    A1[Maximum<br>Likelihood]
-
-    %% Middle layer
-    B1[Explicit Density]
-    B2[Implicit Density]
-
-    %% Bottom layer
-    C1[Bottom Layer Box 1]
-    C2[Bottom Layer Box 2]
-    C3[Bottom Layer Box 3]
-    C4[Bottom Layer Box 4]
-
-    %% Connections
-    A1 --> B1
-    A1 --> B2
-
-    B1 --> C1
-    B1 --> C2
-    B2 --> C3
-    B2 --> C4
-```
 
