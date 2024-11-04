@@ -321,9 +321,6 @@
       margin-right: 0; 
     }
   </style>
-  <script src="index_files/libs/quarto-diagram/mermaid.min.js"></script>
-  <script src="index_files/libs/quarto-diagram/mermaid-init.js"></script>
-  <link href="index_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
 </head>
 <body class="quarto-light">
   <div class="reveal">
@@ -345,34 +342,45 @@ Joe Marsh Rossney
 
   <p class="date">November 4, 2024</p>
 </section>
-<section id="main-points" class="slide level2">
-<h2>Main points</h2>
-<ul>
-<li><p>Sometimes it is more convenient to express a complex distribution as a transformation of a simpler distribution.</p></li>
-<li><p>Flow-based generative models can be thought of as a ‘bridge’ (a one-to-one mapping) between different distributions</p></li>
-<li><p>…</p></li>
-</ul>
+<section id="a-proposition" class="slide level2">
+<h2>A proposition</h2>
+<p><em>Sometimes it is more convenient to express a complicated distribution as a complicated transformation of a simpler distribution.</em></p>
+<p><img data-src="diffusion_flower.gif" class="absolute" style="left: 0px; bottom: 170px; width: 200px; "> <img data-src="forward.gif" class="absolute" style="left: 650px; bottom: 140px; width: 400px; "></p>
 </section>
-<section id="flow-based-generative-models" class="slide level2">
-<h2>Flow-based Generative Models</h2>
-<p>Learn a smooth, invertible mapping from the data to a set of variables whose joint density is trivial to sample from.</p>
-<div class="fragment">
-<div class="callout callout-important callout-titled callout-style-default">
-<div class="callout-body">
-<div class="callout-title">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<p><strong>Important</strong></p>
-</div>
-<div class="callout-content">
-<p>Flow-based models come with <em>explicit</em> and <em>tractable</em> densities - i.e.&nbsp;we don’t just get the ‘data’ <span class="math inline">\(x\)</span>, but we get <span class="math inline">\(p_\theta(x)\)</span> too.</p>
-<p>This is very different from other kinds of generative models, and opens up some interesting opportunities for statistics.</p>
-</div>
-</div>
-</div>
-</div>
-<p><img data-src="diffusion_flower.gif" class="absolute" style="left: 0px; bottom: 0px; "> <img data-src="forward.gif" class="absolute" style="left: 650px; bottom: -30px; width: 350px; "></p>
+<section id="flow-based-models" class="slide level2">
+<h2>Flow-based models</h2>
+<p>Learn an invertible mapping from the data to a set of variables whose joint density is trivial to sample from.</p>
+<p>Think of them as a ‘bridge’ between different distributions.</p>
+<p><img data-src="normalizing-flow.png"></p>
+
+<aside class="notes">
+<p>TODO: credit image</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+<aside><div>
+<p>For the statisticians: a more powerful and general form of inversion sampling.</p>
+<p>For the mathematicians: variational families of diffeomorphisms.</p>
+</div></aside></section>
+<section id="flow-based-models-1" class="slide level2">
+<h2>Flow-based models</h2>
+<p>Basic recipe for flows on <span class="math inline">\(\mathbb{R}^D\)</span>:</p>
+<ul>
+<li><span class="math inline">\(q(z)\)</span>, a simple base density (e.g.&nbsp;a Gaussian)</li>
+<li>A family of invertible functions <span class="math inline">\(f_\theta : \mathbb{R}^D \to \mathbb{R}^D\)</span>, parametrised by <span class="math inline">\(\theta\)</span> (weights &amp; biases of neural networks), with <em>tractable Jacobian determinant</em> <span class="math display">\[
+\underbrace{p_\theta(x)}_{\text{variational density}}
+= \underbrace{q\left(f_\theta^{-1}(x)\right)}_{\text{base density}}
+\underbrace{\left\lvert \frac{\partial f_\theta^{-1}(x)}{\partial x} \right\rvert}_{\text{Jacobian determinant}}
+\]</span></li>
+</ul>
 <aside class="notes">
 <ul>
 <li>Often conditioned on some context (e.g.&nbsp;a prompt)</li>
@@ -390,25 +398,48 @@ Joe Marsh Rossney
           display:block!important;
       }</style></aside>
 </section>
-<section id="asymptotically-unbiased-sampling" class="slide level2">
-<h2>(Asymptotically) unbiased sampling</h2>
+<section id="flow-based-models-2" class="slide level2">
+<h2>Flow-based models</h2>
+<ul>
+<li><p>Flow-based models come with <em>explicit</em> and <em>tractable</em> densities.</p></li>
+<li><p>I.e. we don’t just get the ‘data’ <span class="math inline">\(x\)</span>, but we get the associated density <span class="math inline">\(p_\theta(x)\)</span> too.</p></li>
+<li><p>This is very different from other kinds of generative models, and opens up some interesting opportunities for statistics.</p></li>
+</ul>
+</section>
+<section id="one-possible-use-case" class="slide level2">
+<h2>One possible use-case</h2>
+<p>(Asymptotically) unbiased sampling from <span class="math inline">\(p^\star\)</span>.</p>
 <div class="fragment">
-<!-- -->
-<h4 id="markov-chain-monte-carlo">Markov Chain Monte Carlo</h4>
+<div class="callout callout-note no-icon callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<p><strong>Markov Chain Monte Carlo</strong></p>
+</div>
+<div class="callout-content">
 <ol type="1">
 <li>Construct a stochastic process with stationary density <span class="math inline">\(\pi = p^\star\)</span></li>
 <li>Thermalise</li>
 <li>Sample over a period <span class="math inline">\(\gg\)</span> autocorrelation time</li>
 </ol>
 </div>
+</div>
+</div>
+</div>
 <div class="fragment">
-<!-- -->
-<h4 id="variational-approach">Variational approach</h4>
+<div class="callout callout-tip no-icon callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<p><strong>Flow-based approach</strong></p>
+</div>
+<div class="callout-content">
 <ol type="1">
 <li>Construct a flow-based model with variational density <span class="math inline">\(p_\theta\)</span></li>
 <li>Tune <span class="math inline">\(\theta\)</span> such that <span class="math inline">\(p_\theta \approx p^\star\)</span></li>
 <li>Reweight i.i.d. samples from <span class="math inline">\(p_\theta\)</span></li>
 </ol>
+</div>
+</div>
+</div>
 </div>
 <aside class="notes">
 <p>I am focusing exclusively on densities that are continuous functions of the variables.</p>
@@ -424,88 +455,24 @@ Joe Marsh Rossney
           display:block!important;
       }</style></aside>
 </section>
-<section>
-<section id="backup-slides" class="title-slide slide level1 center">
-<h1>Backup slides</h1>
-
-</section>
-<section id="flow-based-models" class="slide level2">
-<h2>Flow-based models</h2>
-<p>Ingredients:</p>
+<section id="thanks-for-listening" class="slide level2">
+<h2>Thanks for listening</h2>
+<p>Very happy to chat if you are interested in these models, especially if</p>
 <ul>
-<li><span class="math inline">\(q(z)\)</span>, a tractable base density (e.g.&nbsp;a Gaussian)</li>
-<li>A family of invertible functions <span class="math inline">\(f_\theta : z \mapsto x\)</span>, parametrised by <span class="math inline">\(\theta\)</span> (weights &amp; biases of neural networks), with <em>tractable Jacobian determinant</em></li>
+<li>You use MCMC and are facing scalability challenges</li>
+<li>You are interested in interpretable statistical emulation of process models</li>
 </ul>
-<p><span class="math display">\[
-\underbrace{p_\theta(x)}_{\text{variational density}}
-= \underbrace{q\left(f_\theta^{-1}(x)\right)}_{\text{base density}}
-\underbrace{\left\lvert \frac{\partial f_\theta^{-1}(x)}{\partial x} \right\rvert}_{\text{Jacobian determinant}}
-\]</span></p>
-</section>
-<section id="training-flow-based-models" class="slide level2">
-<h2>Training flow-based models</h2>
-<p>Minimise the Kullback-Liebler divergence between <span class="math inline">\(p_\theta\)</span> and a <em>target density</em> <span class="math inline">\(p^\star\)</span> (e.g.&nbsp;defined implicitly by our data)</p>
-<div class="fragment">
-<p><span class="math display">\[
-p_\theta( x ) \equiv \int_{\mathcal{Z}} \mathrm{d} z \, q(z) k_\theta(z, x)
-\]</span> Useful for…</p>
-<ul>
-<li><strong>Inference:</strong> Given a new data point <span class="math inline">\(x\)</span>, estimate <span class="math inline">\(p^\star(x)\)</span></li>
-<li><strong>Sampling:</strong> Generate samples <span class="math inline">\(x \sim p_\theta \approx p^\star\)</span></li>
-</ul>
+<p>Get in touch: joemar@ceh.ac.uk</p>
+<div class="callout callout-note callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
 </div>
-</section>
-<section id="generative-models" class="slide level2">
-<h2>Generative Models</h2>
-<div class="fragment strike">
-<p>AI wizardry that generates things no-one asked for.</p>
+<p><strong>Note</strong></p>
 </div>
-<div class="fragment">
-<p>Algorithms that sample from complicated distributions…</p>
-</div>
-<div class="fragment">
-<p>…Typically through a single forward pass of a highly expressive variational model.</p>
-</div>
-</section>
-<section id="taxonomy-of-generative-models" class="slide level2">
-<h2>Taxonomy of generative models</h2>
-<p>(due to Ian Goodfellow)</p>
-<div class="cell" data-reveal="true" data-fig-wigth="20" data-layout-align="default">
-<div class="cell-output-display">
-<div>
-<p></p><figure class=""><p></p>
-<div>
-<pre class="mermaid mermaid-js">graph TD;
-    %% Define a class with the desired styles
-    classDef defaultStyle fill:#f9f,stroke:#333,stroke-width:1px;
-
-    %% Apply the class to all nodes
-    class A1,B1,B2,C1,C2,C3,C4 defaultStyle;
-
-    %% Top layer
-    A1[Maximum&lt;br&gt;Likelihood]
-
-    %% Middle layer
-    B1[Explicit Density]
-    B2[Implicit Density]
-
-    %% Bottom layer
-    C1[Bottom Layer Box 1]
-    C2[Bottom Layer Box 2]
-    C3[Bottom Layer Box 3]
-    C4[Bottom Layer Box 4]
-
-    %% Connections
-    A1 --&gt; B1
-    A1 --&gt; B2
-
-    B1 --&gt; C1
-    B1 --&gt; C2
-    B2 --&gt; C3
-    B2 --&gt; C4
-</pre>
-</div>
-<p></p></figure><p></p>
+<div class="callout-content">
+<p>I will be giving a longer talk on the same topic in the EDS seminar on 20th November.</p>
 </div>
 </div>
 </div>
@@ -514,7 +481,7 @@ p_\theta( x ) \equiv \int_{\mathcal{Z}} \mathrm{d} z \, q(z) k_\theta(z, x)
 <p>Lightning talk @ UKCEH Statistics Workshop, November 2024</p>
 </div>
 </div>
-</section></section>
+</section>
     </div>
   </div>
 
